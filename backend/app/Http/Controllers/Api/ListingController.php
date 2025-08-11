@@ -56,4 +56,15 @@ class ListingController extends Controller
             'data' => $listing,
         ], 201);
     }
+
+    public function show($id)
+    {
+        $listing = Listing::with('images')->find($id);
+
+        if (!$listing) {
+            return response()->json(['message' => 'Listing not found'], 404);
+        }
+
+        return response()->json($listing);
+    }
 }

@@ -12,3 +12,5 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/listings', [ListingController::class, 'store']);
 });
+
+Route::get('/listings/{id}', [ListingController::class, 'show']);

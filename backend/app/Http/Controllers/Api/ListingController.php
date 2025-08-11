@@ -20,6 +20,7 @@ class ListingController extends Controller
             'phone_number' => 'required|string|max:20',
             'city' => 'required|string|max:255',
             'address' => 'required|string|max:255',
+            'is_furnished' => 'required|boolean',
             'images' => 'required|array|max:30',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -37,13 +38,14 @@ class ListingController extends Controller
             'phone_number' => $request->phone_number,
             'city' => $request->city,
             'address' => $request->address,
+            'is_furnished' => $request->is_furnished,
         ]);
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
                 $path = $image->store('public/listings');
                 $listing->images()->create([
-                    'image_path' => Storage::url($path),
+                    'image_path' => $path,
                 ]);
             }
         }

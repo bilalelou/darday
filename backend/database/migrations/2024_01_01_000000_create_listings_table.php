@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('phone_number');
             $table->string('city');
             $table->string('address');
+            $table->boolean('is_furnished')->default(false);
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });

@@ -19,6 +19,7 @@ class Listing extends Model
         'phone_number',
         'city',
         'address',
+        'is_furnished',
         'user_id',
     ];
 

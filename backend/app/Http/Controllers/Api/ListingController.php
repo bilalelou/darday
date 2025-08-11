@@ -10,6 +10,22 @@ use Illuminate\Support\Facades\Storage;
 
 class ListingController extends Controller
 {
+    public function show($id)
+    {
+        $listing = Listing::with(['images', 'reviews.user'])->find($id);
+
+        if (!$listing) {
+            return response()->json(['message' => 'Listing not found'], 404);
+        }
+
+        $averageRating = $listing->reviews->avg('rating');
+
+        $listingData = $listing->toArray();
+        $listingData['average_rating'] = $averageRating;
+
+        return response()->json($listingData);
+    }
+
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [

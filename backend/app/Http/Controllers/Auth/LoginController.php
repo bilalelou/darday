@@ -21,7 +21,17 @@ class LoginController extends Controller
         }
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-            return response()->json(['success' => true, 'message' => 'Login successful']);
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            $role = $user->getRoleNames()->first();
+
+            $user->role = $role;
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Login successful',
+                'user' => $user->only(['id', 'name', 'email', 'role'])
+            ]);
         }
 
         return response()->json(['success' => false, 'message' => 'Invalid credentials'], 401);

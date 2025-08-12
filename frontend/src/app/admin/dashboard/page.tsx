@@ -40,7 +40,7 @@ export default function AdminDashboardPage() {
 
           <nav className="hidden md:flex items-center gap-4 text-sm">
             <Link className="hover:underline px-2" href="/">الرئيسية</Link>
-            <Link className="hover:underline px-2" href="/dashboard/admin">لوحة الإدارة</Link>
+            <Link className="hover:underline px-2" href="/admin/dashboard">لوحة الإدارة</Link>
             <Link className="hover:underline px-2" href="/dashboard/user">لوحة المستخدم</Link>
             <a className="hover:underline px-2" href="#contact">اتصل بنا</a>
             <div className="flex items-center gap-2">
@@ -75,9 +75,9 @@ export default function AdminDashboardPage() {
             <div className="bg-white rounded-xl shadow p-5 sticky top-6">
               <div className="text-xs text-gray-500 mb-3">القائمة</div>
               <nav className="space-y-1 text-sm">
-                <Link href="/dashboard/admin" className="block px-3 py-2 rounded-md bg-[#1E3A5F] text-white">لوحة الإدارة</Link>
-                <Link href="#" className="block px-3 py-2 rounded-md hover:bg-gray-50">المستخدمون</Link>
-                <Link href="#" className="block px-3 py-2 rounded-md hover:bg-gray-50">العقارات</Link>
+                <Link href="/admin/dashboard" className="block px-3 py-2 rounded-md bg-[#1E3A5F] text-white">لوحة الإدارة</Link>
+                <Link href="/admin/users" className="block px-3 py-2 rounded-md hover:bg-gray-50">المستخدمون</Link>
+                <Link href="/admin/listings" className="block px-3 py-2 rounded-md hover:bg-gray-50">العقارات</Link>
                 <Link href="#" className="block px-3 py-2 rounded-md hover:bg-gray-50">الحجوزات</Link>
                 <Link href="#" className="block px-3 py-2 rounded-md hover:bg-gray-50">الإعدادات</Link>
               </nav>

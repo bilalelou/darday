@@ -51,12 +51,24 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = (await response.json()) as { success?: boolean; message?: string };
+      const data = (await response.json()) as {
+        success?: boolean;
+        message?: string;
+        user?: {
+          id: number;
+          name: string;
+          email: string;
+          role: "admin" | "user";
+        };
+      };
 
-      if (response.ok && data?.success) {
+      if (response.ok && data?.success && data.user) {
         setSuccess(data.message ?? "تم تسجيل الدخول بنجاح");
+
+        const destination = data.user.role === "admin" ? "/admin/dashboard" : "/dashboard";
+
         // Redirect after a short delay so the user can see the success message
-        setTimeout(() => router.push("/"), 800);
+        setTimeout(() => router.push(destination), 800);
       } else {
         setError(data?.message ?? "تعذر تسجيل الدخول. يرجى المحاولة لاحقًا");
       }

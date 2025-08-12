@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 /*
   DarDay.ma - Next.js Homepage Component
@@ -55,6 +55,51 @@ const sampleListings = [
 
 // This is the main component for your homepage.
 export default function HomePage() {
+  const [wishlist, setWishlist] = useState<number[]>([]);
+
+  // A mock API client. In a real app, this would be in a separate file.
+  const api = {
+    get: async (url: string) => {
+      // Mock implementation. Replace with actual API call.
+      if (url === '/api/wishlist') {
+        return { data: [] }; // Mock: return empty wishlist initially
+      }
+      return { data: null };
+    },
+    post: async (url: string) => {
+      // Mock implementation. Replace with actual API call.
+      console.log(`POST request to ${url}`);
+      return { data: { message: 'Success' } };
+    },
+  };
+
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const response = await api.get('/api/wishlist');
+        if (response.data) {
+          setWishlist(response.data.map((item: any) => item.id));
+        }
+      } catch (error) {
+        console.error('Error fetching wishlist:', error);
+      }
+    };
+    fetchWishlist();
+  }, []);
+
+  const handleWishlistToggle = async (listingId: number) => {
+    try {
+      await api.post(`/api/wishlist/${listingId}`);
+      setWishlist(prev =>
+        prev.includes(listingId)
+          ? prev.filter(id => id !== listingId)
+          : [...prev, listingId]
+      );
+    } catch (error) {
+      console.error('Error toggling wishlist:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white text-gray-800">
       {/* Header */}
@@ -131,10 +176,31 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {sampleListings.map(listing => (
-            <article key={listing.id} className="bg-white rounded-lg shadow-sm overflow-hidden border">
+            <article key={listing.id} className="relative bg-white rounded-lg shadow-sm overflow-hidden border">
               <div className="h-48 bg-gray-100">
                 <img src={listing.img} alt={listing.title} className="w-full h-full object-cover" />
               </div>
+
+              <button
+                onClick={() => handleWishlistToggle(listing.id)}
+                className="absolute top-2 right-2 bg-white/70 p-1.5 rounded-full"
+                aria-label="Add to wishlist"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill={wishlist.includes(listing.id) ? 'red' : 'none'}
+                  viewBox="0 0 24 24"
+                  stroke={wishlist.includes(listing.id) ? 'red' : 'currentColor'}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 016.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"
+                  />
+                </svg>
+              </button>
 
               <div className="p-4">
                 <h4 className="font-semibold text-lg">{listing.title}</h4>

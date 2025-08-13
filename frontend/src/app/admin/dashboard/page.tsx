@@ -1,13 +1,27 @@
 "use client";
 
 import React from "react";
-// import Link from "next/link"; // Replaced with <a> for preview
-// import { useRouter } from "next/navigation"; // Replaced for preview
+// In a real Next.js app, you would use:
+// import { useRouter } from "next/navigation";
 import { Users, Package, DollarSign, TrendingUp, Settings, LogOut, LayoutGrid, Shield } from "lucide-react";
+
+// --- A simple router replacement for preview purposes ---
+// This function simulates the behavior of Next.js's router for this environment.
+const useRouter = () => {
+    return {
+        push: (path) => {
+            // In a real app, this would change the URL.
+            // For this preview, we'll navigate by changing the window location.
+            window.location.href = path;
+        }
+    };
+};
+
 
 // --- المكون الرئيسي للوحة التحكم ---
 export default function AdminDashboardPage() {
-  // const router = useRouter(); // Commented out for preview
+  // We use our preview-safe router here.
+  const router = useRouter(); 
 
   // بيانات وهمية باللغة العربية
   const stats = [
@@ -31,27 +45,40 @@ export default function AdminDashboardPage() {
   ];
 
   const handleLogout = async () => {
-    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/logout`;
+    // 1. Get the token from localStorage to authenticate the request
+    const token = localStorage.getItem('api_token');
+    if (!token) {
+        console.error("No authentication token found. Cannot log out.");
+        router.push('/login');
+        return;
+    }
+
+    // Use your API URL from environment variables
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/logout`;
 
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
-        credentials: 'include',
+        credentials: 'include', 
       });
 
       if (response.ok) {
-        // router.push('/login');
-        alert("Logged out successfully!"); // Placeholder for preview
+        console.log("Logged out successfully!");
       } else {
-        console.error('Logout failed');
-        alert("فشل تسجيل الخروج. الرجاء المحاولة مرة أخرى.");
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Logout failed:', response.status, errorData);
       }
     } catch (error) {
       console.error('An error occurred during logout:', error);
-      alert("حدث خطأ أثناء محاولة تسجيل الخروج.");
+    } finally {
+        // ALWAYS clean up and redirect, regardless of success or failure.
+        // This prevents the user from being stuck in a logged-in state if the token is invalid.
+        localStorage.removeItem('api_token');
+        router.push('/login');
     }
   };
 
@@ -70,24 +97,24 @@ export default function AdminDashboardPage() {
             </div>
         </div>
         <nav className="flex-1 px-4 py-2 space-y-2">
-          <a href="/admin/dashboard" className="flex items-center px-4 py-2.5 text-sm font-semibold rounded-md bg-[#D4AF37] text-[#1E3A5F]">
+          <a href="#" className="flex items-center px-4 py-2.5 text-sm font-semibold rounded-md bg-[#D4AF37] text-[#1E3A5F]">
             <LayoutGrid className="h-5 w-5" /> <span className="mr-3">لوحة التحكم</span>
           </a>
-          <a href="/admin/users" className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md hover:bg-gray-700/50">
+          <a href="#" className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md hover:bg-gray-700/50">
             <Users className="h-5 w-5" /> <span className="mr-3">المستخدمون</span>
           </a>
-          <a href="/admin/rentals" className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md hover:bg-gray-700/50">
+          <a href="#" className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md hover:bg-gray-700/50">
             <Package className="h-5 w-5" /> <span className="mr-3">العقارات</span>
           </a>
-          <a href="/admin/analytics" className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md hover:bg-gray-700/50">
+          <a href="#" className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md hover:bg-gray-700/50">
             <TrendingUp className="h-5 w-5" /> <span className="mr-3">التحليلات</span>
           </a>
-          <a href="/admin/settings" className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md hover:bg-gray-700/50">
+          <a href="#" className="flex items-center px-4 py-2.5 text-sm font-medium rounded-md hover:bg-gray-700/50">
             <Settings className="h-5 w-5" /> <span className="mr-3">الإعدادات</span>
           </a>
         </nav>
         <div className="px-4 py-4 border-t border-gray-700">
-            <button onClick={handleLogout} className="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-md text-red-400 hover:bg-gray-700/50">
+            <button onClick={handleLogout} className="w-full flex items-center px-4 py-2.5 text-sm font-medium rounded-md text-red-400 hover:bg-red-500 hover:text-white transition-colors duration-200">
                 <LogOut className="h-5 w-5" />
                 <span className="mr-3">تسجيل الخروج</span>
             </button>
@@ -105,7 +132,7 @@ export default function AdminDashboardPage() {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {stats.map((stat, index) => (
-              <div key={index} className="bg-white p-6 rounded-lg border border-gray-200">
+              <div key={index} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-shadow">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-500">{stat.title}</p>
@@ -120,11 +147,11 @@ export default function AdminDashboardPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             {/* Recent Activity */}
-            <div className="lg:col-span-2 bg-white p-6 rounded-lg border border-gray-200">
+            <div className="lg:col-span-2 bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
               <h3 className="font-semibold text-lg text-gray-800 mb-4">آخر الأنشطة</h3>
               <div className="space-y-4">
                 {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-start space-x-3">
+                  <div key={index} className="flex items-start space-x-3 rtl:space-x-reverse">
                     <div className={`w-2.5 h-2.5 rounded-full mt-1.5 ${activity.status === 'success' ? 'bg-green-500' : activity.status === 'warning' ? 'bg-yellow-500' : 'bg-blue-500'}`} />
                     <div>
                       <p className="text-sm text-gray-700">{activity.message}</p>
@@ -136,7 +163,7 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Pending Actions */}
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
+            <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
               <h3 className="font-semibold text-lg text-gray-800 mb-4">آخر الإجراءات المعلقة</h3>
               <div className="space-y-3">
                 {pendingActions.map((action, index) => (
@@ -149,29 +176,6 @@ export default function AdminDashboardPage() {
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div>
-            <h3 className="text-xl font-bold text-gray-800 mb-4">إجراءات سريعة</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <button className="flex flex-col items-center justify-center h-24 bg-[#1E3A5F] text-white rounded-lg hover:bg-opacity-90 transition-colors">
-                    <Users className="h-6 w-6 mb-2" />
-                    <span>إدارة المستخدمين</span>
-                </button>
-                <button className="flex flex-col items-center justify-center h-24 bg-[#D4AF37] text-[#1E3A5F] rounded-lg hover:bg-opacity-90 transition-colors">
-                    <Package className="h-6 w-6 mb-2" />
-                    <span>إضافة عقار</span>
-                </button>
-                <button className="flex flex-col items-center justify-center h-24 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                    <TrendingUp className="h-6 w-6 mb-2 text-gray-700" />
-                    <span className="text-gray-700">عرض التقارير</span>
-                </button>
-                <button className="flex flex-col items-center justify-center h-24 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                    <Settings className="h-6 w-6 mb-2 text-gray-700" />
-                    <span className="text-gray-700">إعدادات النظام</span>
-                </button>
             </div>
           </div>
         </main>

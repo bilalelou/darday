@@ -20,26 +20,18 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
-        // البحث عن المستخدم عن طريق البريد الإلكتروني
         $user = User::where('email', $request->email)->first();
 
-        // التحقق من وجود المستخدم ومن صحة كلمة المرور
         if (! $user || ! Hash::check($request->password, $user->password)) {
-            // إذا كانت البيانات غير صحيحة، أرسل رسالة خطأ
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials do not match our records.'],
             ]);
         }
 
-        // --- إذا كانت البيانات صحيحة ---
-
-        // إنشاء توكن جديد للمستخدم
         $token = $user->createToken('api-token')->plainTextToken;
 
-        // جلب الدور الخاص بالمستخدم
         $user->role = $user->getRoleNames()->first();
 
-        // إرسال التوكن مع معلومات المستخدم
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
@@ -50,7 +42,6 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        // إلغاء التوكن المستخدم في الطلب الحالي
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Successfully logged out']);

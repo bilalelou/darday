@@ -73,11 +73,13 @@ export default function ProfessionalLoginPage() {
         success?: boolean;
         message?: string;
         user?: { role?: "admin" | "user" };
+        token?: string;
       };
 
-      if (response.ok && data?.success && data.user) {
+      if (response.ok && data?.success && data.user && data.token) {
+        localStorage.setItem('api_token', data.token);
         const destination = data.user.role === "admin" ? "/admin/dashboard" : "/dashboard";
-        router.push(destination);
+        router.push(destination); // توجيه المستخدم مباشرة
       } else {
         setError(data?.message ?? "فشل تسجيل الدخول. يرجى التحقق من بياناتك.");
       }

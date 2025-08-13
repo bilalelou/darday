@@ -1,39 +1,59 @@
 "use client";
 
 import React, { FormEvent, useState } from "react";
-// import { useRouter } from "next/navigation"; // Replaced for preview
-// import Link from "next/link"; // Replaced with <a> for preview
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 
-const LOGO_SVG = () => (
-  <svg
-    width="130"
-    height="34"
-    viewBox="0 0 260 68"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden
-  >
-    <rect width="260" height="68" rx="8" fill="#1E3A5F" />
-    <text
-      x="28"
-      y="43"
-      fill="#FFFFFF"
-      fontFamily="Inter, system-ui, -apple-system"
-      fontWeight="700"
-      fontSize="28"
-    >
-      DarDay<span style={{ fill: "#D4AF37" }}> .ma</span>
-    </text>
-  </svg>
+// --- مكونات إضافية ---
+const Navigation = () => (
+    <header className="bg-white shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2">
+                <div className="w-10 h-10 bg-[#1E3A5F] rounded-md flex items-center justify-center text-2xl font-bold text-[#D4AF37]">D</div>
+                <span className="text-xl font-bold text-[#1E3A5F]">DarDay.ma</span>
+            </Link>
+            
+            {/* Main Nav */}
+            <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+                <Link href="/" className="hover:text-[#1E3A5F]">الرئيسية</Link>
+                <Link href="/about" className="hover:text-[#1E3A5F]">من نحن</Link>
+                <Link href="/services" className="hover:text-[#1E3A5F]">الخدمات</Link>
+                <Link href="/contact" className="hover:text-[#1E3A5F]">اتصل بنا</Link>
+            </nav>
+
+            {/* Auth Buttons */}
+            <div className="flex items-center gap-2">
+                 <Link href="/login" className="text-[#1E3A5F] font-semibold px-4 py-2 rounded-md hover:bg-gray-100">
+                    تسجيل الدخول
+                </Link>
+                <Link href="/register" className="bg-[#1E3A5F] text-white px-4 py-2 rounded-lg font-semibold hover:bg-opacity-90">
+                    إنشاء حساب
+                </Link>
+            </div>
+        </div>
+    </header>
 );
 
-export default function LoginPage() {
-  // const router = useRouter(); // Commented out for preview
+const Footer = () => (
+    <footer id="contact" className="bg-[#102030] text-white py-8">
+        <div className="max-w-6xl mx-auto px-4 text-center text-sm text-gray-400">
+            © {new Date().getFullYear()} DarDay.ma — كل الحقوق محفوظة
+        </div>
+    </footer>
+);
+
+
+// --- المكون الرئيسي للصفحة ---
+export default function ProfessionalLoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api";
 
@@ -41,7 +61,6 @@ export default function LoginPage() {
     event.preventDefault();
     setIsSubmitting(true);
     setError(null);
-    setSuccess(null);
 
     try {
       const response = await fetch(`${apiBaseUrl}/login`, {
@@ -53,159 +72,115 @@ export default function LoginPage() {
       const data = (await response.json()) as {
         success?: boolean;
         message?: string;
-        user?: {
-          id: number;
-          name: string;
-          email: string;
-          role: "admin" | "user";
-        };
+        user?: { role?: "admin" | "user" };
       };
 
       if (response.ok && data?.success && data.user) {
-        setSuccess(data.message ?? "تم تسجيل الدخول بنجاح");
-
         const destination = data.user.role === "admin" ? "/admin/dashboard" : "/dashboard";
-        
-        alert(`Success! Redirecting to: ${destination}`);
-        // In a real app, this would redirect:
-        // setTimeout(() => router.push(destination), 800);
+        router.push(destination);
       } else {
-        setError(data?.message ?? "تعذر تسجيل الدخول. يرجى المحاولة لاحقًا");
+        setError(data?.message ?? "فشل تسجيل الدخول. يرجى التحقق من بياناتك.");
       }
     } catch {
-      setError("حدث خطأ غير متوقع. تحقق من الاتصال بالخادم");
+      setError("حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.");
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-white text-gray-800 flex flex-col">
-      {/* Header */}
-      <header className="bg-[#1E3A5F] text-white">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div aria-hidden>
-              <LOGO_SVG />
+    <div className="min-h-screen flex flex-col bg-gray-100" dir="rtl">
+      <Navigation />
+      <main className="flex-1 flex items-center justify-center py-12 px-4">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-[#1E3A5F] rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-[#D4AF37] font-bold text-3xl">D</span>
+              </div>
+              <h1 className="text-2xl font-bold text-[#1E3A5F]">مرحباً بعودتك</h1>
+              <p className="text-gray-500 mt-1">سجل الدخول إلى حساب DarDay الخاص بك</p>
             </div>
-          </div>
-          <nav className="hidden md:flex items-center gap-4 text-sm">
-            <a className="hover:underline px-2" href="/">الرئيسية</a>
-            <div className="flex items-center gap-2">
-              <a
-                href="/login"
-                className="px-4 py-2 rounded-md hover:bg-white/10 transition-colors"
+            
+            {error && (
+              <div className="mt-6 mb-4 text-center bg-red-100 text-red-700 text-sm p-3 rounded-md border border-red-200">
+                  {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6 mt-8">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">البريد الإلكتروني</label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
+                  placeholder="أدخل بريدك الإلكتروني"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password"  className="block text-sm font-medium text-gray-700 mb-1">كلمة المرور</label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#D4AF37] pl-10"
+                    placeholder="أدخل كلمة المرور"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 left-0 pl-3 flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <input type="checkbox" id="rememberMe" onChange={(e) => setRememberMe(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-[#1E3A5F] focus:ring-[#D4AF37]" />
+                  <label htmlFor="rememberMe" className="text-sm text-gray-600 mr-2">تذكرني</label>
+                </div>
+                <Link href="/forgot-password" className="text-sm text-[#1E3A5F] hover:text-[#D4AF37]">
+                  هل نسيت كلمة المرور؟
+                </Link>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-[#1E3A5F] hover:bg-opacity-90 text-white font-bold py-2.5 px-4 rounded-lg transition-colors disabled:opacity-50"
+                disabled={isSubmitting}
               >
-                تسجيل الدخول
-              </a>
-              <button className="bg-[#D4AF37] text-[#102030] px-4 py-2 rounded-md font-semibold">
-                أضف عقار
+                {isSubmitting ? "جاري التحقق..." : "تسجيل الدخول"}
               </button>
-            </div>
-          </nav>
-          <div className="md:hidden">
-            <button aria-label="menu" className="p-2 bg-white bg-opacity-10 rounded">☰</button>
+
+              <div className="text-center">
+                <span className="text-sm text-gray-600">ليس لديك حساب؟ </span>
+                <Link href="/register" className="text-sm text-[#1E3A5F] hover:text-[#D4AF37] font-medium">
+                  أنشئ حساباً
+                </Link>
+              </div>
+            </form>
           </div>
-        </div>
-      </header>
-
-      {/* Main/login card */}
-      <main className="flex-1 flex items-center justify-center bg-[#F7F7F7] px-4 py-10">
-        <div className="w-full max-w-md bg-white rounded-xl shadow-md p-6">
-          <h1 className="text-2xl font-bold text-[#1E3A5F] mb-6 text-center">تسجيل الدخول</h1>
-
-          {error && (
-            <div className="mb-4 rounded-md bg-red-50 p-3 text-red-700 text-sm border border-red-200">
-              {error}
-            </div>
-          )}
-
-          {success && (
-            <div className="mb-4 rounded-md bg-green-50 p-3 text-green-700 text-sm border border-green-200">
-              {success}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            <div>
-              <label htmlFor="email" className="block text-sm text-gray-600 mb-1">
-                البريد الإلكتروني
-              </label>
-              <input
-                id="email"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-md border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
-                placeholder="name@example.com"
-                autoComplete="email"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm text-gray-600 mb-1">
-                كلمة المرور
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-md border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#D4AF37]"
-                placeholder="••••••••"
-                autoComplete="current-password"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-[#D4AF37] text-[#102030] py-2 rounded-md font-semibold hover:opacity-95 disabled:opacity-60"
-            >
-              {isSubmitting ? "جاري الدخول…" : "دخول"}
-            </button>
-          </form>
-
-          <p className="text-center text-sm text-gray-600 mt-4">
-            ليس لديك حساب؟{" "}
-            <a href="/register" className="text-[#1E3A5F] underline">
-              إنشاء حساب
-            </a>
-          </p>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer id="contact" className="bg-[#102030] text-white py-8">
-        <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <div className="mb-3">
-              <LOGO_SVG />
-            </div>
-            <p className="text-sm text-gray-200">
-              منصة لعرض شقق الكراء اليومي والشهري في المغرب.
-            </p>
-          </div>
-          <div>
-            <h5 className="font-semibold mb-2">روابط</h5>
-            <ul className="text-sm text-gray-200 space-y-1">
-              <li>الأسئلة المتكررة</li>
-              <li>شروط الاستخدام</li>
-              <li>سياسة الخصوصية</li>
-            </ul>
-          </div>
-          <div>
-            <h5 className="font-semibold mb-2">اتصل بنا</h5>
-            <p className="text-sm text-gray-200">info@darday.ma</p>
-            <p className="text-sm text-gray-200">+212 6X XX XX XX</p>
-          </div>
-        </div>
-        <div className="mt-8 text-center text-sm text-gray-400">
-          © {new Date().getFullYear()} DarDay.ma — كل الحقوق محفوظة
-        </div>
-      </footer>
+      <Footer />
     </div>
-  );
+  )
 }

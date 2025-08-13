@@ -1,8 +1,8 @@
 "use client";
 
 import React, { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation"; // تم تصحيح مسار الاستيراد
-import Link from "next/link";
+// import { useRouter } from "next/navigation"; // Replaced for preview
+// import Link from "next/link"; // Replaced with <a> for preview
 
 const LOGO_SVG = () => (
   <svg
@@ -28,7 +28,7 @@ const LOGO_SVG = () => (
 );
 
 export default function LoginPage() {
-  const router = useRouter();
+  // const router = useRouter(); // Commented out for preview
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,25 +50,25 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = (await response.json()) as { 
-        success?: boolean; 
+      const data = (await response.json()) as {
+        success?: boolean;
         message?: string;
-        user?: { role?: string };
+        user?: {
+          id: number;
+          name: string;
+          email: string;
+          role: "admin" | "user";
+        };
       };
 
-      if (response.ok && data?.success) {
+      if (response.ok && data?.success && data.user) {
         setSuccess(data.message ?? "تم تسجيل الدخول بنجاح");
 
-        const userRole = data.user?.role;
-
-        setTimeout(() => {
-          if (userRole === 'admin') {
-            router.push('/admin/dashboard');
-          } else {
-            router.push('/dashboard');
-          }
-        }, 800);
-
+        const destination = data.user.role === "admin" ? "/admin/dashboard" : "/dashboard";
+        
+        alert(`Success! Redirecting to: ${destination}`);
+        // In a real app, this would redirect:
+        // setTimeout(() => router.push(destination), 800);
       } else {
         setError(data?.message ?? "تعذر تسجيل الدخول. يرجى المحاولة لاحقًا");
       }
@@ -90,14 +90,14 @@ export default function LoginPage() {
             </div>
           </div>
           <nav className="hidden md:flex items-center gap-4 text-sm">
-            <Link className="hover:underline px-2" href="/">الرئيسية</Link>
+            <a className="hover:underline px-2" href="/">الرئيسية</a>
             <div className="flex items-center gap-2">
-              <Link
+              <a
                 href="/login"
                 className="px-4 py-2 rounded-md hover:bg-white/10 transition-colors"
               >
                 تسجيل الدخول
-              </Link>
+              </a>
               <button className="bg-[#D4AF37] text-[#102030] px-4 py-2 rounded-md font-semibold">
                 أضف عقار
               </button>
@@ -170,9 +170,9 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-gray-600 mt-4">
             ليس لديك حساب؟{" "}
-            <Link href="/register" className="text-[#1E3A5F] underline">
+            <a href="/register" className="text-[#1E3A5F] underline">
               إنشاء حساب
-            </Link>
+            </a>
           </p>
         </div>
       </main>

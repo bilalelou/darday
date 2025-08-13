@@ -1,7 +1,7 @@
 "use client";
 
 import React, { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"; // تم تصحيح مسار الاستيراد
 import Link from "next/link";
 
 const LOGO_SVG = () => (
@@ -46,17 +46,29 @@ export default function LoginPage() {
     try {
       const response = await fetch(`${apiBaseUrl}/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
-      const data = (await response.json()) as { success?: boolean; message?: string };
+      const data = (await response.json()) as { 
+        success?: boolean; 
+        message?: string;
+        user?: { role?: string };
+      };
 
       if (response.ok && data?.success) {
         setSuccess(data.message ?? "تم تسجيل الدخول بنجاح");
-        // Redirect after a short delay so the user can see the success message
-        setTimeout(() => router.push("/"), 800);
+
+        const userRole = data.user?.role;
+
+        setTimeout(() => {
+          if (userRole === 'admin') {
+            router.push('/admin/dashboard');
+          } else {
+            router.push('/dashboard');
+          }
+        }, 800);
+
       } else {
         setError(data?.message ?? "تعذر تسجيل الدخول. يرجى المحاولة لاحقًا");
       }
@@ -77,12 +89,8 @@ export default function LoginPage() {
               <LOGO_SVG />
             </div>
           </div>
-
           <nav className="hidden md:flex items-center gap-4 text-sm">
             <Link className="hover:underline px-2" href="/">الرئيسية</Link>
-            <Link className="hover:underline px-2" href="/">المدن</Link>
-            <Link className="hover:underline px-2" href="/">كيف تحجز</Link>
-            <a className="hover:underline px-2" href="#contact">اتصل بنا</a>
             <div className="flex items-center gap-2">
               <Link
                 href="/login"
@@ -95,11 +103,8 @@ export default function LoginPage() {
               </button>
             </div>
           </nav>
-
           <div className="md:hidden">
-            <button aria-label="menu" className="p-2 bg-white bg-opacity-10 rounded">
-              ☰
-            </button>
+            <button aria-label="menu" className="p-2 bg-white bg-opacity-10 rounded">☰</button>
           </div>
         </div>
       </header>
@@ -164,7 +169,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-sm text-gray-600 mt-4">
-            ليس لديك حساب؟ {" "}
+            ليس لديك حساب؟{" "}
             <Link href="/register" className="text-[#1E3A5F] underline">
               إنشاء حساب
             </Link>
@@ -183,7 +188,6 @@ export default function LoginPage() {
               منصة لعرض شقق الكراء اليومي والشهري في المغرب.
             </p>
           </div>
-
           <div>
             <h5 className="font-semibold mb-2">روابط</h5>
             <ul className="text-sm text-gray-200 space-y-1">
@@ -192,14 +196,12 @@ export default function LoginPage() {
               <li>سياسة الخصوصية</li>
             </ul>
           </div>
-
           <div>
             <h5 className="font-semibold mb-2">اتصل بنا</h5>
             <p className="text-sm text-gray-200">info@darday.ma</p>
             <p className="text-sm text-gray-200">+212 6X XX XX XX</p>
           </div>
         </div>
-
         <div className="mt-8 text-center text-sm text-gray-400">
           © {new Date().getFullYear()} DarDay.ma — كل الحقوق محفوظة
         </div>
@@ -207,5 +209,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-

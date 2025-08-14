@@ -1,33 +1,31 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Plus, Search, FilterX, MoreHorizontal, Loader2 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Plus, Search, FilterX, MoreHorizontal, Loader2, Eye, Edit, MessageSquare, Ban } from "lucide-react";
 
 // 1. تحديث نوع البيانات ليتوافق مع استجابة Laravel
 type Role = {
   id: number;
   name: string;
-  // أضف أي خصائص أخرى للدور هنا
 };
 
 type User = {
   id: string;
   name: string;
   email: string;
-  roles: Role[]; // تم تغيير 'role' إلى 'roles' كمصفوفة
-  status: "active" | "pending" | "banned"; // افترض أن لديك حقل 'status'
-  created_at: string; // Laravel يستخدم created_at
-  // افترض أن لديك هذه الحقول أو قم بتعديلها
+  roles: Role[];
+  status: "active" | "pending" | "banned";
+  created_at: string;
   rentals: number; 
   totalSpent: number;
 };
 
-// دالة لتحديد لون الشارة (badge) بناءً على الدور
+// ... (دوال getRoleBadgeColor و getStatusBadgeColor تبقى كما هي)
 const getRoleBadgeColor = (roleName: string) => {
   switch (roleName.toLowerCase()) {
     case "admin":
       return "bg-red-100 text-red-700";
-    case "premium": // يمكنك إضافة هذا الدور في Laravel
+    case "premium":
       return "bg-purple-100 text-purple-700";
     case "customer":
     default:
@@ -35,7 +33,6 @@ const getRoleBadgeColor = (roleName: string) => {
   }
 };
 
-// دالة لتحديد لون شارة الحالة
 const getStatusBadgeColor = (status: string) => {
   switch (status?.toLowerCase()) {
     case "active":
@@ -49,24 +46,25 @@ const getStatusBadgeColor = (status: string) => {
   }
 };
 
+
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<'top' | 'bottom'>('bottom'); // حالة لتحديد موضع القائمة
+  const menuRef = useRef<HTMLDivElement>(null);
 
+  // useEffect لجلب البيانات
   useEffect(() => {
     const fetchUsers = async () => {
       setIsLoading(true);
       setError(null);
-      
       try {
         const token = localStorage.getItem("api_token");
-        if (!token) {
-          throw new Error("Authentication token not found.");
-        }
+        if (!token) throw new Error("Authentication token not found.");
 
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-        
         const response = await fetch(`${apiUrl}/admin/users`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -74,9 +72,7 @@ export default function UsersPage() {
           }
         });
 
-        // --- تم التعديل هنا لمعالجة الخطأ ---
         const responseText = await response.text();
-        
         let data;
         try {
             data = JSON.parse(responseText);
@@ -104,21 +100,54 @@ export default function UsersPage() {
         setIsLoading(false);
       }
     };
-
     fetchUsers();
   }, []);
 
+  // useEffect لإغلاق القائمة عند الضغط خارجها
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (openMenuId && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openMenuId]);
+
+  // دالة لفتح/إغلاق القائمة وتحديد موضعها
+  const handleMenuToggle = (event: React.MouseEvent<HTMLButtonElement>, userId: string) => {
+    if (openMenuId === userId) {
+      setOpenMenuId(null);
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const dropdownHeight = 220; // ارتفاع تقريبي للقائمة
+
+    if (spaceBelow < dropdownHeight) {
+      setMenuPosition('top'); // فتح لأعلى
+    } else {
+      setMenuPosition('bottom'); // فتح لأسفل
+    }
+
+    setOpenMenuId(userId);
+  };
+
+
   return (
     <div className="space-y-8">
-      {/* ... قسم العنوان والفلاتر يبقى كما هو ... */}
-      <div className="flex items-center justify-between">
+      {/* ... (قسم العنوان والفلاتر يبقى كما هو) ... */}
+       <div className="flex items-center justify-between">
         <div className="text-right">
           <h1 className="text-3xl font-bold text-gray-800">إدارة المستخدمين</h1>
           <p className="text-gray-500 mt-1">
             إدارة حسابات المستخدمين وصلاحياتهم
           </p>
         </div>
-        <button className="flex items-center justify-center bg-[#1E3A5F] text-white px-4 py-2 rounded-lg shadow-sm hover:bg-blue-700 transition-colors">
+        <button className="flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-blue-700 transition-colors">
           <Plus size={20} className="ml-2" />
           إضافة مستخدم
         </button>
@@ -152,6 +181,7 @@ export default function UsersPage() {
           </div>
         </div>
       </div>
+
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-x-auto">
         <div className="p-4 flex justify-between items-center border-b">
             <div className="text-right">
@@ -193,26 +223,54 @@ export default function UsersPage() {
                     <td className="p-4 text-gray-900 font-medium">{user.name}</td>
                     <td className="p-4 text-gray-700">{user.email}</td>
                     <td className="p-4">
-                      <span
-                        className={`px-3 py-1 text-xs font-semibold rounded-full capitalize ${getRoleBadgeColor(userRole)}`}
-                      >
-                        {userRole}
-                      </span>
+                      <span className={`px-3 py-1 text-xs font-semibold rounded-full capitalize ${getRoleBadgeColor(userRole)}`}>{userRole}</span>
                     </td>
                     <td className="p-4">
-                      <span
-                        className={`px-3 py-1 text-xs font-semibold rounded-full capitalize ${getStatusBadgeColor(user.status)}`}
-                      >
-                        {user.status}
-                      </span>
+                      <span className={`px-3 py-1 text-xs font-semibold rounded-full capitalize ${getStatusBadgeColor(user.status)}`}>{user.status}</span>
                     </td>
                     <td className="p-4 text-gray-700">{new Date(user.created_at).toLocaleDateString()}</td>
                     <td className="p-4 text-gray-700">{user.rentals}</td>
                     <td className="p-4 text-gray-700">${user.totalSpent.toLocaleString()}</td>
+                    
+                    {/* --- خلية الإجراءات مع القائمة المنسدلة --- */}
                     <td className="p-4 text-center">
-                      <button className="text-gray-500 hover:text-gray-800">
-                        <MoreHorizontal size={20} />
-                      </button>
+                      <div className="relative inline-block text-left" ref={openMenuId === user.id ? menuRef : null}>
+                        <button
+                          onClick={(e) => handleMenuToggle(e, user.id)}
+                          className="p-2 rounded-full hover:bg-gray-200 transition-colors"
+                        >
+                          <MoreHorizontal size={20} />
+                        </button>
+                        {openMenuId === user.id && (
+                          <div className={`absolute left-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10 ${
+                              menuPosition === 'bottom'
+                                ? 'origin-top-right mt-2' // الموضع الافتراضي لأسفل
+                                : 'origin-bottom-right bottom-full mb-2' // الموضع الجديد لأعلى
+                            }`}
+                          >
+                            <div className="py-1" role="menu" aria-orientation="vertical">
+                              <div className="px-4 py-2 text-sm text-gray-500 border-b">إجراءات</div>
+                              <a href="#" className="flex items-center text-right w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                                <Eye size={16} className="ml-3" />
+                                <span>عرض الملف الشخصي</span>
+                              </a>
+                              <a href="#" className="flex items-center text-right w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                                <Edit size={16} className="ml-3" />
+                                <span>تعديل المستخدم</span>
+                              </a>
+                              <a href="#" className="flex items-center text-right w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                                <MessageSquare size={16} className="ml-3" />
+                                <span>إرسال رسالة</span>
+                              </a>
+                              <div className="border-t my-1"></div>
+                              <a href="#" className="flex items-center text-right w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50" role="menuitem">
+                                <Ban size={16} className="ml-3" />
+                                <span>تعليق المستخدم</span>
+                              </a>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )

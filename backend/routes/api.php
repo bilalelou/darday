@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\ListingController;
 use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Http\Request;
@@ -17,4 +19,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout']);
     Route::post('/listings', [ListingController::class, 'store']);
     Route::post('/listings/{listingId}/reviews', [ReviewController::class, 'store']);
+    Route::get('/admin/users', [UserController::class, 'index'])->middleware('role:admin');
+
+    // Admin routes
+    // Route::prefix('admin')->group(function () {
+    //     Route::get('/users', [UserController::class, 'index']);
+    //     Route::get('/users/{id}', [UserController::class, 'show']);
+    //     Route::put('/users/{id}', [UserController::class, 'update']);
+    //     Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    //     Route::patch('/users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
+    //     Route::get('/users-stats', [UserController::class, 'getStats']);
+    // });
 });

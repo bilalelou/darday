@@ -13,12 +13,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // استدعاء الـ Seeders بالترتيب الصحيح
         $this->call([
             RoleSeeder::class,
             UserSeeder::class,
             ListingSeeder::class,
-            // يمكنك إضافة seeders أخرى هنا في المستقبل
         ]);
     }
 }

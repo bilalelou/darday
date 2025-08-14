@@ -65,10 +65,10 @@ export default function HomePage() {
           </div>
 
           <nav className="hidden md:flex items-center gap-4 text-sm">
-            <a className="hover:underline px-2" href="#">الرئيسية</a>
-            <a className="hover:underline px-2" href="#cities">المدن</a>
-            <a className="hover:underline px-2" href="#how">كيف تحجز</a>
-            <a className="hover:underline px-2" href="#contact">اتصل بنا</a>
+            <a className="hover:underline px-2" href="/">الرئيسية</a>
+            <a className="hover:underline px-2" href="/about">من نحن</a>
+            <a className="hover:underline px-2" href="/services">خدماتنا</a>
+            <a className="hover:underline px-2" href="/contact">اتصل بنا</a>
             <div className="flex items-center gap-2">
                 <a href="/login" className="px-4 py-2 rounded-md hover:bg-white/10 transition-colors">تسجيل الدخول</a>
                 <button className="bg-[#D4AF37] text-[#102030] px-4 py-2 rounded-md font-semibold">أضف عقار</button>
@@ -174,9 +174,9 @@ export default function HomePage() {
           <div>
             <h5 className="font-semibold mb-2">روابط</h5>
             <ul className="text-sm text-gray-200 space-y-1">
-              <li>الأسئلة المتكررة</li>
-              <li>شروط الاستخدام</li>
-              <li>سياسة الخصوصية</li>
+              <li><a href="/about" className="hover:text-[#D4AF37]">من نحن</a></li>
+              <li><a href="/services" className="hover:text-[#D4AF37]">خدماتنا</a></li>
+              <li><a href="/contact" className="hover:text-[#D4AF37]">اتصل بنا</a></li>
             </ul>
           </div>
 

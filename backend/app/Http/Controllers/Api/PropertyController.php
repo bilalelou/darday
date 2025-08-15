@@ -55,19 +55,14 @@ class PropertyController extends Controller
             'address' => 'required|string|max:255',
             'city' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'amenities' => 'nullable|array',
+            'amenities' => 'nullable|array', // Laravel سيتعامل مع هذا كمصفوفة
             'type' => 'required|string',
             'status' => 'required|string',
             'pricePerNight' => 'required|numeric',
             'images.*' => 'sometimes|required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
-        // --- تم التعديل هنا ---
-        // تحويل مصفوفة العناصر إلى نص JSON قبل إرسالها إلى قاعدة البيانات
-        if (isset($validatedData['amenities'])) {
-            $validatedData['amenities'] = json_encode($validatedData['amenities']);
-        }
-
+        // Laravel سيقوم بتحويل 'amenities' إلى JSON تلقائياً بفضل خاصية $casts في الموديل
         $property = Property::create($validatedData);
 
         if ($request->hasFile('images')) {

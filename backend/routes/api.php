@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\RentalController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Api\PropertyController;
+use App\Http\Controllers\Api\DashboardController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,20 +25,25 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/listings/{listingId}/reviews', [ReviewController::class, 'store']);
 
     Route::get('/admin/users', [UserController::class, 'index'])->middleware('role:admin');
+    Route::post('/admin/users', [UserController::class, 'store'])->middleware('role:admin');
+    Route::get('/admin/users/{user}', [UserController::class, 'show'])->middleware('role:admin');
+    Route::put('/admin/users/{user}', [UserController::class, 'update'])->middleware('role:admin');
+
 
     Route::get('/admin/rentals', [RentalController::class, 'index'])->middleware('role:admin');
     Route::get('/admin/rentals/stats', [RentalController::class, 'getStats'])->middleware('role:admin');
 
-    // ... (المسارات الأخرى)
     Route::get('/admin/properties', [PropertyController::class, 'index'])->middleware('role:admin');
     Route::post('/admin/properties', [PropertyController::class, 'store'])->middleware('role:admin');
     Route::get('/admin/properties/{property}', [PropertyController::class, 'show'])->middleware('role:admin');
     Route::post('/admin/properties/{property}', [PropertyController::class, 'update'])->middleware('role:admin');
     Route::delete('/admin/properties/{property}', [PropertyController::class, 'destroy'])->middleware('role:admin');
 
+// ... (المسارات الأخرى)
+
+    Route::get('/admin/dashboard-data', [DashboardController::class, 'getData'])->middleware('role:admin');
     // Admin routes
     // Route::prefix('admin')->group(function () {
-    //     Route::get('/users', [UserController::class, 'index']);
     //     Route::get('/users/{id}', [UserController::class, 'show']);
     //     Route::put('/users/{id}', [UserController::class, 'update']);
     //     Route::delete('/users/{id}', [UserController::class, 'destroy']);

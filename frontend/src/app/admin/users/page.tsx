@@ -1,61 +1,44 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Plus, Search, FilterX, MoreHorizontal, Loader2, Eye, Edit, MessageSquare, Ban } from "lucide-react";
+import Link from "next/link";
+import { Plus, Search, FilterX, MoreHorizontal, Loader2, Eye, Edit, Trash2, MessageSquare, Ban } from "lucide-react";
 
-// 1. تحديث نوع البيانات ليتوافق مع استجابة Laravel
-type Role = {
-  id: number;
-  name: string;
-};
-
+// ... (باقي الكود يبقى كما هو)
+type Role = { id: number; name: string; };
 type User = {
-  id: string;
+  id: string;a
   name: string;
   email: string;
   roles: Role[];
   status: "active" | "pending" | "banned";
   created_at: string;
-  rentals: number; 
+  rentals: number;
   totalSpent: number;
 };
-
-// ... (دوال getRoleBadgeColor و getStatusBadgeColor تبقى كما هي)
-const getRoleBadgeColor = (roleName: string) => {
-  switch (roleName.toLowerCase()) {
-    case "admin":
-      return "bg-red-100 text-red-700";
-    case "premium":
-      return "bg-purple-100 text-purple-700";
-    case "customer":
-    default:
-      return "bg-blue-100 text-blue-700";
+const getRoleBadgeColor = (role: string) => {
+  switch (role.toLowerCase()) {
+    case "admin": return "bg-red-100 text-red-700";
+    case "premium": return "bg-purple-100 text-purple-700";
+    case "customer": default: return "bg-blue-100 text-blue-700";
   }
 };
-
 const getStatusBadgeColor = (status: string) => {
   switch (status?.toLowerCase()) {
-    case "active":
-      return "bg-green-100 text-green-700";
-    case "pending":
-      return "bg-yellow-100 text-yellow-700";
-    case "banned":
-      return "bg-gray-100 text-gray-700";
-    default:
-      return "bg-gray-100 text-gray-700";
+    case "active": return "bg-green-100 text-green-700";
+    case "pending": return "bg-yellow-100 text-yellow-700";
+    case "banned": return "bg-gray-100 text-gray-700";
+    default: return "bg-gray-100 text-gray-700";
   }
 };
-
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [menuPosition, setMenuPosition] = useState<'top' | 'bottom'>('bottom'); // حالة لتحديد موضع القائمة
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // useEffect لجلب البيانات
   useEffect(() => {
     const fetchUsers = async () => {
       setIsLoading(true);
@@ -66,25 +49,15 @@ export default function UsersPage() {
 
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
         const response = await fetch(`${apiUrl}/admin/users`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-          }
+          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
         });
 
-        const responseText = await response.text();
-        let data;
-        try {
-            data = JSON.parse(responseText);
-        } catch (e) {
-            console.error("Failed to parse JSON. Raw response from server:", responseText);
-            throw new Error("Received malformed data from the server.");
-        }
-
         if (!response.ok) {
-          throw new Error(data.message || 'Failed to fetch users from the server.');
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch users from the server.');
         }
 
+        const data = await response.json();
         const usersWithMockData = data.map((user: any) => ({
             ...user,
             rentals: user.rentals || Math.floor(Math.random() * 20),
@@ -92,7 +65,6 @@ export default function UsersPage() {
             status: user.status || 'active',
         }));
         setUsers(usersWithMockData);
-
       } catch (err: any) {
         setError("فشل في جلب بيانات المستخدمين. يرجى المحاولة مرة أخرى.");
         console.error(err.message);
@@ -103,7 +75,6 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
-  // useEffect لإغلاق القائمة عند الضغط خارجها
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (openMenuId && menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -116,42 +87,22 @@ export default function UsersPage() {
     };
   }, [openMenuId]);
 
-  // دالة لفتح/إغلاق القائمة وتحديد موضعها
-  const handleMenuToggle = (event: React.MouseEvent<HTMLButtonElement>, userId: string) => {
-    if (openMenuId === userId) {
-      setOpenMenuId(null);
-      return;
-    }
-
-    const rect = event.currentTarget.getBoundingClientRect();
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const dropdownHeight = 220; // ارتفاع تقريبي للقائمة
-
-    if (spaceBelow < dropdownHeight) {
-      setMenuPosition('top'); // فتح لأعلى
-    } else {
-      setMenuPosition('bottom'); // فتح لأسفل
-    }
-
-    setOpenMenuId(userId);
-  };
-
-
   return (
     <div className="space-y-8">
-      {/* ... (قسم العنوان والفلاتر يبقى كما هو) ... */}
-       <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <div className="text-right">
           <h1 className="text-3xl font-bold text-gray-800">إدارة المستخدمين</h1>
           <p className="text-gray-500 mt-1">
             إدارة حسابات المستخدمين وصلاحياتهم
           </p>
         </div>
-        <button className="flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-blue-700 transition-colors">
+        <Link href="/admin/users/new" className="flex items-center justify-center bg-blue-600 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-blue-700 transition-colors">
           <Plus size={20} className="ml-2" />
           إضافة مستخدم
-        </button>
+        </Link>
       </div>
+
+      {/* إعادة قسم الفلاتر */}
       <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
           <div className="md:col-span-2">
@@ -232,32 +183,26 @@ export default function UsersPage() {
                     <td className="p-4 text-gray-700">{user.rentals}</td>
                     <td className="p-4 text-gray-700">${user.totalSpent.toLocaleString()}</td>
                     
-                    {/* --- خلية الإجراءات مع القائمة المنسدلة --- */}
                     <td className="p-4 text-center">
                       <div className="relative inline-block text-left" ref={openMenuId === user.id ? menuRef : null}>
                         <button
-                          onClick={(e) => handleMenuToggle(e, user.id)}
+                          onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)}
                           className="p-2 rounded-full hover:bg-gray-200 transition-colors"
                         >
                           <MoreHorizontal size={20} />
                         </button>
                         {openMenuId === user.id && (
-                          <div className={`absolute left-0 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10 ${
-                              menuPosition === 'bottom'
-                                ? 'origin-top-right mt-2' // الموضع الافتراضي لأسفل
-                                : 'origin-bottom-right bottom-full mb-2' // الموضع الجديد لأعلى
-                            }`}
-                          >
+                          <div className="origin-top-right absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10">
                             <div className="py-1" role="menu" aria-orientation="vertical">
                               <div className="px-4 py-2 text-sm text-gray-500 border-b">إجراءات</div>
                               <a href="#" className="flex items-center text-right w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
                                 <Eye size={16} className="ml-3" />
                                 <span>عرض الملف الشخصي</span>
                               </a>
-                              <a href="#" className="flex items-center text-right w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                              <Link href={`/admin/users/${user.id}/edit`} className="flex items-center text-right w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
                                 <Edit size={16} className="ml-3" />
                                 <span>تعديل المستخدم</span>
-                              </a>
+                              </Link>
                               <a href="#" className="flex items-center text-right w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
                                 <MessageSquare size={16} className="ml-3" />
                                 <span>إرسال رسالة</span>

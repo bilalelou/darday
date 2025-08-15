@@ -30,6 +30,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // ... (المسارات الأخرى)
     Route::get('/admin/properties', [PropertyController::class, 'index'])->middleware('role:admin');
     Route::post('/admin/properties', [PropertyController::class, 'store'])->middleware('role:admin');
+    Route::get('/admin/properties/{property}', [PropertyController::class, 'show'])->middleware('role:admin');
+    Route::post('/admin/properties/{property}', [PropertyController::class, 'update'])->middleware('role:admin');
+    Route::delete('/admin/properties/{property}', [PropertyController::class, 'destroy'])->middleware('role:admin');
+
     // Admin routes
     // Route::prefix('admin')->group(function () {
     //     Route::get('/users', [UserController::class, 'index']);

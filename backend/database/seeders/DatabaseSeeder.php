@@ -17,6 +17,9 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UserSeeder::class,
             ListingSeeder::class,
+            RentalSeeder::class,
+            PropertySeeder::class,
+
         ]);
     }
 }

@@ -4,8 +4,10 @@ use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\ListingController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\Admin\UserController;
+use App\Http\Controllers\Api\RentalController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Api\PropertyController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,8 +21,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout']);
     Route::post('/listings', [ListingController::class, 'store']);
     Route::post('/listings/{listingId}/reviews', [ReviewController::class, 'store']);
+
     Route::get('/admin/users', [UserController::class, 'index'])->middleware('role:admin');
 
+    Route::get('/admin/rentals', [RentalController::class, 'index'])->middleware('role:admin');
+    Route::get('/admin/rentals/stats', [RentalController::class, 'getStats'])->middleware('role:admin');
+
+    // ... (المسارات الأخرى)
+    Route::get('/admin/properties', [PropertyController::class, 'index'])->middleware('role:admin');
+    Route::post('/admin/properties', [PropertyController::class, 'store'])->middleware('role:admin');
     // Admin routes
     // Route::prefix('admin')->group(function () {
     //     Route::get('/users', [UserController::class, 'index']);

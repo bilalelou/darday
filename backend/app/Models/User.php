@@ -11,6 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\Listing;
 use App\Models\Review;
+use App\Models\Rental;
 
 class User extends Authenticatable
 {
@@ -69,5 +70,10 @@ class User extends Authenticatable
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
+    }
+
+    public function rentals()
+    {
+        return $this->hasMany(Rental::class);
     }
 }

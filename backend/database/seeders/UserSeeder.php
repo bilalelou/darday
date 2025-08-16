@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -14,22 +13,37 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // إنشاء مستخدم بصلاحيات مدير
+        // 1. إنشاء المستخدم المدير
         $admin = User::create([
             'name' => 'Admin User',
-            'email' => 'admin@darday.ma',
-            'password' => Hash::make('password123'), // استخدم كلمة مرور قوية هنا
+            'first_name' => 'Admin',
+            'last_name' => 'User',
+            'email' => 'admin@example.com',
+            'password' => Hash::make('password'),
+            'status' => 'نشط',
         ]);
-        // إعطاء دور 'admin' لهذا المستخدم
         $admin->assignRole('admin');
 
-        // إنشاء مستخدم عادي
-        $user = User::create([
-            'name' => 'Regular User',
-            'email' => 'user@darday.ma',
-            'password' => Hash::make('password123'), // استخدم كلمة مرور قوية هنا
+        // 2. إنشاء المستخدم الأول
+        $customer1 = User::create([
+            'name' => 'Ahmed Ali',
+            'first_name' => 'Ahmed',
+            'last_name' => 'Ali',
+            'email' => 'ahmed@example.com',
+            'password' => Hash::make('password'),
+            'status' => 'نشط',
         ]);
-        // إعطاء دور 'user' لهذا المستخدم
-        $user->assignRole('user');
+        $customer1->assignRole('customer');
+
+        // 3. إنشاء المستخدم الثاني
+        $customer2 = User::create([
+            'name' => 'Fatima Zahra',
+            'first_name' => 'Fatima',
+            'last_name' => 'Zahra',
+            'email' => 'fatima@example.com',
+            'password' => Hash::make('password'),
+            'status' => 'نشط',
+        ]);
+        $customer2->assignRole('customer');
     }
 }

@@ -80,6 +80,7 @@ class PropertyController extends Controller
      */
     public function update(Request $request, Property $property)
     {
+        // --- تم التعديل هنا ---
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'address' => 'required|string|max:255',

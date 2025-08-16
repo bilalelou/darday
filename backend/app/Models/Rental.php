@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Property;
 
 class Rental extends Model
 {
@@ -19,4 +20,9 @@ class Rental extends Model
         'status',
         'total',
     ];
+
+    public function property()
+    {
+        return $this->belongsTo(Property::class);
+    }
 }

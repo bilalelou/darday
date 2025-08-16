@@ -89,4 +89,20 @@ class UserController extends Controller
 
         return response()->json($user->load('roles'));
     }
+
+    public function destroy(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return response()->json(['message' => 'لا يمكنك حذف حسابك الخاص.'], 403);
+        }
+
+        $user->delete();
+
+        return response()->json(null, 204); // 204 No Content
+    }
+    public function getRentals(User $user)
+    {
+        $rentals = $user->rentals()->latest()->get();
+        return response()->json($rentals);
+    }
 }

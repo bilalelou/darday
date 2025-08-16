@@ -37,6 +37,8 @@ class RentalFactory extends Factory
         ];
 
         return [
+            'user_id' => \App\Models\User::factory(),
+            'property_id' => \App\Models\Property::factory(),
             'orderId' => 'R' . $this->faker->unique()->numberBetween(100, 999),
             'customerName' => $this->faker->name(),
             'item' => $this->faker->randomElement($items),

@@ -34,4 +34,11 @@ class FavoriteController extends Controller
         $isFavorite = Auth::user()->favorites()->where('property_id', $property_id)->exists();
         return response()->json(['isFavorite' => $isFavorite]);
     }
+
+    // جلب جميع العقارات المفضلة للمستخدم
+    public function index()
+    {
+        $favorites = Auth::user()->favorites()->with('property.images')->get();
+        return response()->json($favorites);
+    }
 }

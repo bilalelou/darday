@@ -64,6 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/user/password', [UserDashboardController::class, 'updatePassword'])->middleware('auth:sanctum');
 
     // مسارات المفضلة
+    Route::get('/user/favorites', [FavoriteController::class, 'index'])->middleware('auth:sanctum');
     Route::post('/favorites', [FavoriteController::class, 'store'])->middleware('auth:sanctum');
     Route::delete('/favorites/{property_id}', [FavoriteController::class, 'destroy'])->middleware('auth:sanctum');
     Route::get('/favorites/status/{property_id}', [FavoriteController::class, 'status'])->middleware('auth:sanctum');

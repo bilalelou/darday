@@ -18,10 +18,20 @@ class Property extends Model
         'status',
         'pricePerNight',
         'imageUrl',
+        'bedrooms',
+        'bathrooms',
+        'area',
     ];
     public function images()
     {
         return $this->hasMany(PropertyImage::class);
     }
 
+    /**
+     * Get the favorites for this property.
+     */
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
 }

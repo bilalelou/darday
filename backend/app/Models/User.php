@@ -12,6 +12,7 @@ use Spatie\Permission\Traits\HasRoles;
 use App\Models\Listing;
 use App\Models\Review;
 use App\Models\Rental;
+use App\Models\Favorite;
 
 class User extends Authenticatable
 {
@@ -75,5 +76,13 @@ class User extends Authenticatable
     public function rentals()
     {
         return $this->hasMany(Rental::class);
+    }
+
+    /**
+     * Get the favorites for the user.
+     */
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
     }
 }

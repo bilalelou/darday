@@ -3,11 +3,12 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, History, User, Heart, Settings, LogOut, Bell } from "lucide-react";
+import { LayoutDashboard, History, User, Heart, Settings, LogOut, Bell, Home } from "lucide-react";
 
 // قائمة الروابط الجديدة للقائمة الجانبية
 const navLinks = [
   { href: "/dashboard", text: "الرئيسية", icon: LayoutDashboard },
+  { href: "/dashboard/properties", text: "العقارات", icon: Home },
   { href: "/dashboard/history", text: "تاريخ الإيجار", icon: History },
   { href: "/dashboard/profile", text: "ملفي الشخصي", icon: User },
   { href: "/dashboard/favorites", text: "قائمة التفضيلات", icon: Heart },

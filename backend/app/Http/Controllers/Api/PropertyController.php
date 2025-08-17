@@ -46,6 +46,19 @@ class PropertyController extends Controller
     }
 
     /**
+     * عرض تفاصيل عقار واحد للعموم.
+     */
+    public function publicShow(Property $property)
+    {
+        // التأكد من أن العقار متاح قبل عرضه
+        if ($property->status !== 'متاح') {
+            return response()->json(['message' => 'هذا العقار غير متاح حالياً.'], 404);
+        }
+
+        return response()->json($property->load('images'));
+    }
+
+    /**
      * تخزين عقار جديد في قاعدة البيانات.
      */
     public function store(Request $request)
@@ -59,6 +72,9 @@ class PropertyController extends Controller
             'type' => 'required|string',
             'status' => 'required|string',
             'pricePerNight' => 'required|numeric',
+            'bedrooms' => 'required|integer|min:1',
+            'bathrooms' => 'required|integer|min:1',
+            'area' => 'required|integer|min:1',
             'images.*' => 'sometimes|required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
@@ -90,6 +106,9 @@ class PropertyController extends Controller
             'type' => 'required|string',
             'status' => 'required|string',
             'pricePerNight' => 'required|numeric',
+            'bedrooms' => 'required|integer|min:1',
+            'bathrooms' => 'required|integer|min:1',
+            'area' => 'required|integer|min:1',
             'imagesToDelete' => 'nullable|array',
             'imagesToDelete.*' => 'integer',
             'images.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
@@ -122,6 +141,19 @@ class PropertyController extends Controller
         }
 
         return response()->json($property->load('images'));
+    }
+
+    /**
+     * عرض قائمة بالعقارات المتاحة للعموم.
+     */
+    public function getAvailableProperties()
+    {
+        $properties = Property::with('images')
+                                ->where('status', 'متاح')
+                                ->latest()
+                                ->get();
+
+        return response()->json($properties);
     }
 
     /**

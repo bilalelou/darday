@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\UserDashboardController;
+use App\Http\Controllers\Api\FavoriteController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,12 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/register', [RegisterController::class, 'register']);
 Route::get('/listings/{id}', [ListingController::class, 'show']);
+
+// مسار عام لجلب العقارات المتاحة
+Route::get('/properties', [PropertyController::class, 'getAvailableProperties']);
+
+// مسار عام لجلب تفاصيل عقار واحد
+Route::get('/properties/{property}', [PropertyController::class, 'publicShow']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -55,4 +62,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user/profile', [UserDashboardController::class, 'getProfile'])->middleware('auth:sanctum');
     Route::put('/user/profile', [UserDashboardController::class, 'updateProfile'])->middleware('auth:sanctum');
     Route::put('/user/password', [UserDashboardController::class, 'updatePassword'])->middleware('auth:sanctum');
+
+    // مسارات المفضلة
+    Route::post('/favorites', [FavoriteController::class, 'store'])->middleware('auth:sanctum');
+    Route::delete('/favorites/{property_id}', [FavoriteController::class, 'destroy'])->middleware('auth:sanctum');
+    Route::get('/favorites/status/{property_id}', [FavoriteController::class, 'status'])->middleware('auth:sanctum');
 });

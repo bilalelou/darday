@@ -1,14 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react"; // 1. استيراد useEffect
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, History, User, Heart, Settings, LogOut, Bell, Home } from "lucide-react";
+import { LayoutDashboard, History, User, Heart, Settings, LogOut, Home, Menu, X } from "lucide-react";
 
-// قائمة الروابط الجديدة للقائمة الجانبية
+// قائمة الروابط للقائمة الجانبية
 const navLinks = [
   { href: "/dashboard", text: "الرئيسية", icon: LayoutDashboard },
-  { href: "/dashboard/properties", text: "العقارات", icon: Home },
+  { href: "/dashboard/properties", text: "تصفح العقارات", icon: Home },
   { href: "/dashboard/history", text: "تاريخ الإيجار", icon: History },
   { href: "/dashboard/profile", text: "ملفي الشخصي", icon: User },
   { href: "/dashboard/favorites", text: "قائمة التفضيلات", icon: Heart },
@@ -22,9 +22,17 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // 2. إضافة التحقق الأمني
+  useEffect(() => {
+    const token = localStorage.getItem("api_token");
+    if (!token) {
+      router.push("/login");
+    }
+  }, [router]);
 
   const handleLogout = () => {
-    // حذف التوكن وتوجيه المستخدم لصفحة تسجيل الدخول
     localStorage.removeItem("api_token");
     router.push("/login");
   };
@@ -32,7 +40,7 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen bg-gray-100 font-serif" dir="rtl">
       {/* --- القائمة الجانبية (Sidebar) --- */}
-      <aside className="w-64 flex-shrink-0 bg-gray-50 border-l border-gray-200 flex flex-col">
+      <aside className={`fixed inset-y-0 right-0 z-50 w-64 bg-gray-50 border-l border-gray-200 flex-col transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'} md:flex`}>
         <div className="h-20 flex items-center px-6">
           <h1 className="text-2xl font-bold text-gray-800">
             لوحة التحكم
@@ -48,9 +56,10 @@ export default function DashboardLayout({
               <Link
                 key={link.text}
                 href={link.href}
+                onClick={() => setIsSidebarOpen(false)}
                 className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
                   isActive
-                    ? "bg-[#1E3A5F] text-white"
+                    ? "bg-blue-800 text-white"
                     : "text-gray-600 hover:bg-gray-200"
                 }`}
               >
@@ -74,6 +83,15 @@ export default function DashboardLayout({
 
       {/* --- المحتوى الرئيسي للصفحات --- */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* --- القائمة العلوية للهاتف --- */}
+        <header className="md:hidden bg-white shadow-sm">
+            <div className="flex justify-between items-center p-4">
+                <h1 className="text-xl font-bold text-gray-800">DarDay</h1>
+                <button onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+                    {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+            </div>
+        </header>
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
           {children}
         </main>

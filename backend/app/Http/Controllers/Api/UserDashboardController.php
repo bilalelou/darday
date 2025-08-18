@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Rental;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -14,16 +15,26 @@ class UserDashboardController extends Controller
     {
         $user = Auth::user();
 
-        // حساب الإحصائيات
-        $activeRentals = $user->rentals()->where('status', 'نشط')->count();
-        $totalRentals = $user->rentals()->count();
-        $totalSpent = $user->rentals()->sum('total');
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
 
-        // جلب آخر 3 إيجارات
-        $recentRentals = $user->rentals()->latest()->take(3)->get();
+        // التأكد من أن العلاقة rentals موجودة قبل استخدامها
+        if (method_exists($user, 'rentals')) {
+            $activeRentals = $user->rentals()->where('status', 'نشط')->count();
+            $totalRentals = $user->rentals()->count();
+            $totalSpent = $user->rentals()->sum('total');
+            $recentRentals = $user->rentals()->with('property.images')->latest()->take(3)->get();
+        } else {
+            // في حالة عدم وجود العلاقة، يتم إرجاع قيم افتراضية
+            $activeRentals = 0;
+            $totalRentals = 0;
+            $totalSpent = 0;
+            $recentRentals = [];
+        }
 
         return response()->json([
-            'userName' => $user->first_name,
+            'userName' => $user->first_name ?? $user->name, // استخدام first_name أو name
             'stats' => [
                 ['label' => 'الإيجارات النشطة', 'value' => $activeRentals, 'color' => 'text-blue-600'],
                 ['label' => 'إجمالي الإيجارات', 'value' => $totalRentals, 'color' => 'text-green-600'],
@@ -36,12 +47,9 @@ class UserDashboardController extends Controller
     public function getRentalsHistory()
     {
         $user = Auth::user();
-
         $rentals = $user->rentals()->with('property.images')->latest()->get();
-
         return response()->json($rentals);
     }
-
     /**
      * جلب بيانات الملف الشخصي للمستخدم المسجل دخوله.
      */

@@ -13,24 +13,35 @@ class RegisterController extends Controller
 {
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+        $validatedData = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
-        }
+        // تقسيم الاسم إلى الاسم الأول والأخير
+        $nameParts = explode(' ', $validatedData['name'], 2);
+        $firstName = $nameParts[0];
+        $lastName = $nameParts[1] ?? '';
 
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $validatedData['name'],
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'email' => $validatedData['email'],
+            'password' => Hash::make($validatedData['password']),
+            'status' => 'نشط', // تعيين الحالة الافتراضية
         ]);
 
-        Auth::login($user);
+        // تعيين الدور الافتراضي "customer"
+        $user->assignRole('customer');
 
-        return response()->json(['success' => true, 'message' => 'Registration successful']);
+        // إنشاء توكن للمستخدم الجديد
+        $token = $user->createToken('api_token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+        ], 201);
     }
 }

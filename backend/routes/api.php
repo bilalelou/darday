@@ -11,6 +11,9 @@ use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\UserDashboardController;
 use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\AmenityController;
+use App\Http\Controllers\Api\CityController;
+use App\Http\Controllers\Api\PropertyTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +44,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/rentals', [RentalController::class, 'index'])->middleware('role:admin');
     Route::get('/admin/rentals/stats', [RentalController::class, 'getStats'])->middleware('role:admin');
 
+    // Amenities for admin
+    Route::get('/admin/amenities', [AmenityController::class, 'index'])->middleware('role:admin');
+
+    // Cities and property types for admin
+    Route::get('/admin/cities', [CityController::class, 'index'])->middleware('role:admin');
+    Route::get('/admin/property-types', [PropertyTypeController::class, 'index'])->middleware('role:admin');
+
     Route::get('/admin/properties', [PropertyController::class, 'index'])->middleware('role:admin');
     Route::post('/admin/properties', [PropertyController::class, 'store'])->middleware('role:admin');
     Route::get('/admin/properties/{property}', [PropertyController::class, 'show'])->middleware('role:admin');
@@ -60,8 +70,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // User profile routes
     Route::get('/user/profile', [UserDashboardController::class, 'getProfile'])->middleware('auth:sanctum');
-    Route::put('/user/profile', [UserDashboardController::class, 'updateProfile'])->middleware('auth:sanctum');
+    Route::post('/user/profile', [UserDashboardController::class, 'updateProfile'])->middleware('auth:sanctum');
     Route::put('/user/password', [UserDashboardController::class, 'updatePassword'])->middleware('auth:sanctum');
+
+    // مسارات الإعدادات
+    Route::get('/user/settings', [UserDashboardController::class, 'getSettings'])->middleware('auth:sanctum');
+    Route::put('/user/settings', [UserDashboardController::class, 'updateSettings'])->middleware('auth:sanctum');
 
     // مسارات المفضلة
     Route::get('/user/favorites', [FavoriteController::class, 'index'])->middleware('auth:sanctum');

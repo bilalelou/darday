@@ -31,9 +31,16 @@ class User extends Authenticatable
         'phone',
         'address',
         'city',
+        'company',
+        'region',
+        'postal_code',
+        'bio',
+        'profile_image',
         'notes',
         'status',
         'password',
+        'notifications',
+        'preferences',
     ];
 
     /**
@@ -55,6 +62,8 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'notifications' => 'array',
+        'preferences' => 'array',
     ];
 
     /**

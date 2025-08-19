@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Rental;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 
 class UserDashboardController extends Controller
@@ -72,10 +73,25 @@ class UserDashboardController extends Controller
             'phone' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
+            'region' => 'nullable|string|max:255',
+            'postal_code' => 'nullable|string|max:255',
+            'company' => 'nullable|string|max:255',
+            'bio' => 'nullable|string',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
         // تحديث الاسم الكامل تلقائياً
         $validatedData['name'] = $validatedData['first_name'] . ' ' . $validatedData['last_name'];
+
+        if ($request->hasFile('profile_image')) {
+            // حذف الصورة القديمة إذا كانت موجودة
+            if ($user->profile_image) {
+                Storage::disk('public')->delete($user->profile_image);
+            }
+            // تخزين الصورة الجديدة
+            $path = $request->file('profile_image')->store('profiles', 'public');
+            $validatedData['profile_image'] = $path;
+        }
 
         $user->update($validatedData);
 
@@ -99,5 +115,31 @@ class UserDashboardController extends Controller
         ]);
 
         return response()->json(['message' => 'تم تحديث كلمة المرور بنجاح.']);
+    }
+
+        public function getSettings()
+    {
+        $user = Auth::user();
+        return response()->json([
+            'notifications' => $user->notifications,
+            'preferences' => $user->preferences,
+        ]);
+    }
+
+    /**
+     * تحديث إعدادات المستخدم المسجل دخوله.
+     */
+    public function updateSettings(Request $request)
+    {
+        $user = Auth::user();
+
+        $validatedData = $request->validate([
+            'notifications' => 'sometimes|array',
+            'preferences' => 'sometimes|array',
+        ]);
+
+        $user->update($validatedData);
+
+        return response()->json(['message' => 'تم حفظ الإعدادات بنجاح.']);
     }
 }

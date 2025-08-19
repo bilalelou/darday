@@ -11,10 +11,9 @@ class Property extends Model
     protected $fillable = [
         'title',
         'address',
-        'city',
+        'city_id',
         'description',
-        'amenities',
-        'type',
+        'property_type_id',
         'status',
         'pricePerNight',
         'imageUrl',
@@ -25,6 +24,21 @@ class Property extends Model
     public function images()
     {
         return $this->hasMany(PropertyImage::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    public function propertyType()
+    {
+        return $this->belongsTo(PropertyType::class);
+    }
+
+    public function amenities()
+    {
+        return $this->belongsToMany(Amenity::class, 'amenity_property');
     }
 
     /**

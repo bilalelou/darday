@@ -32,7 +32,7 @@ class PropertyController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        $properties = $query->with('images')->latest()->get();
+    $properties = $query->with(['images', 'city', 'propertyType', 'amenities'])->latest()->get();
 
         return response()->json($properties);
     }
@@ -42,7 +42,7 @@ class PropertyController extends Controller
      */
     public function show(Property $property)
     {
-        return response()->json($property->load('images'));
+    return response()->json($property->load(['images', 'city', 'propertyType', 'amenities']));
     }
 
     /**
@@ -55,7 +55,7 @@ class PropertyController extends Controller
             return response()->json(['message' => 'هذا العقار غير متاح حالياً.'], 404);
         }
 
-        return response()->json($property->load('images'));
+    return response()->json($property->load(['images', 'amenities']));
     }
 
     /**
@@ -66,20 +66,27 @@ class PropertyController extends Controller
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'address' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
+            'city_id' => 'required|integer|exists:cities,id', // <-- تم التعديل هنا
+            'property_type_id' => 'required|integer|exists:property_types,id', // <-- تم التعديل هنا
             'description' => 'nullable|string',
-            'amenities' => 'nullable|array', // Laravel سيتعامل مع هذا كمصفوفة
-            'type' => 'required|string',
             'status' => 'required|string',
             'pricePerNight' => 'required|numeric',
             'bedrooms' => 'required|integer|min:1',
             'bathrooms' => 'required|integer|min:1',
             'area' => 'required|integer|min:1',
+            'amenities' => 'nullable|array',
+            'amenities.*' => 'integer|exists:amenities,id',
             'images.*' => 'sometimes|required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
-        // Laravel سيقوم بتحويل 'amenities' إلى JSON تلقائياً بفضل خاصية $casts في الموديل
+        $amenities = $validatedData['amenities'] ?? null;
+        unset($validatedData['amenities']);
+
         $property = Property::create($validatedData);
+
+        if (!empty($amenities)) {
+            $property->amenities()->sync($amenities);
+        }
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
@@ -88,7 +95,7 @@ class PropertyController extends Controller
             }
         }
 
-        return response()->json($property->load('images'), 201);
+        return response()->json($property->load('images', 'amenities'), 201);
     }
 
     /**
@@ -100,30 +107,30 @@ class PropertyController extends Controller
         $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'address' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
+            'city_id' => 'required|integer|exists:cities,id', // <-- تم التعديل هنا
+            'property_type_id' => 'required|integer|exists:property_types,id', // <-- تم التعديل هنا
             'description' => 'nullable|string',
-            'amenities' => 'nullable|array',
-            'type' => 'required|string',
             'status' => 'required|string',
             'pricePerNight' => 'required|numeric',
             'bedrooms' => 'required|integer|min:1',
             'bathrooms' => 'required|integer|min:1',
             'area' => 'required|integer|min:1',
+            'amenities' => 'nullable|array',
+            'amenities.*' => 'integer|exists:amenities,id',
             'imagesToDelete' => 'nullable|array',
             'imagesToDelete.*' => 'integer',
             'images.*' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
-        // --- تم التعديل هنا ---
-        // تحويل مصفوفة العناصر إلى نص JSON قبل تحديث قاعدة البيانات
-        if (isset($validatedData['amenities'])) {
-            $validatedData['amenities'] = json_encode($validatedData['amenities']);
-        } else {
-            // في حالة عدم إرسال أي عناصر، يتم حفظها كمصفوفة فارغة
-            $validatedData['amenities'] = json_encode([]);
-        }
+        // Sync amenities separately
+        $amenities = $validatedData['amenities'] ?? null;
+        unset($validatedData['amenities']);
 
         $property->update($validatedData);
+
+        if (isset($amenities)) {
+            $property->amenities()->sync($amenities);
+        }
 
         if (!empty($validatedData['imagesToDelete'])) {
             $images = $property->images()->whereIn('id', $validatedData['imagesToDelete'])->get();
@@ -148,13 +155,14 @@ class PropertyController extends Controller
      */
     public function getAvailableProperties()
     {
-        $properties = Property::with('images')
-                                ->where('status', 'متاح')
-                                ->latest()
-                                ->get();
-
+    $properties = Property::with(['images', 'city', 'propertyType', 'amenities'])
+                ->where('status', 'متاح')
+                ->latest()
+                ->get();
+        info($properties);
         return response()->json($properties);
     }
+
 
     /**
      * حذف عقار محدد من قاعدة البيانات.

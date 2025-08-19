@@ -59,10 +59,10 @@ export default function PropertiesPage() {
         if (!response.ok) throw new Error("Failed to fetch properties.");
 
         const data = await response.json();
-        const formattedData = data.map((prop: any) => ({
-            ...prop,
-            amenities: Array.isArray(prop.amenities) ? prop.amenities : JSON.parse(prop.amenities || '[]')
-        }));
+    const formattedData = data.map((prop: any) => ({
+      ...prop,
+      amenities: Array.isArray(prop.amenities) ? prop.amenities : []
+    }));
         setProperties(formattedData);
         setFilteredProperties(formattedData);
         

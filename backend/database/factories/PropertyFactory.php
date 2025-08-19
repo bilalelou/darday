@@ -16,12 +16,11 @@ class PropertyFactory extends Factory
      */
     public function definition(): array
     {
-        $city = $this->faker->randomElement(['الدار البيضاء', 'مراكش', 'الرباط', 'فاس', 'طنجة']);
         return [
             'title' => $this->faker->randomElement(['شقة فاخرة بإطلالة على البحر', 'فيلا حديثة مع مسبح خاص', 'استوديو عصري في قلب المدينة', 'شقة هادئة بالقرب من المركز']),
             'address' => $this->faker->streetAddress() . ', ' . $this->faker->randomElement(['الدار البيضاء', 'مراكش', 'الرباط', 'فاس']),
-            'city' => $city,
-            'type' => $this->faker->randomElement(['شقة', 'فيلا', 'استوديو']),
+            'city_id' => \App\Models\City::inRandomOrder()->first()?->id,
+            'property_type_id' => \App\Models\PropertyType::inRandomOrder()->first()?->id,
             'status' => $this->faker->randomElement(['متاح', 'مؤجر', 'صيانة']),
             'pricePerNight' => $this->faker->numberBetween(500, 3000),
             'imageUrl' => 'https://placehold.co/100x60/E2E8F0/4A5568?text=Property',

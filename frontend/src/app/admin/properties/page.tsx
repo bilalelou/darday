@@ -4,18 +4,20 @@ import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Plus, Search, FilterX, Eye, Edit, Trash2, Loader2, AlertTriangle } from "lucide-react";
 
-// ... (تعريف الأنواع ودوال الألوان تبقى كما هي)
+// تحديث تعريف أنواع البيانات ليعكس العلاقات الجديدة
 type PropertyImage = { id: number; path: string; };
+type City = { id: number; name: string; };
+type PropertyType = { id: number; name: string; };
 type Property = {
   id: number;
   title: string;
   address: string;
-  city: string;
-  type: "شقة" | "فيلا" | "استوديو";
+  city: City; // تم التحديث
+  property_type: PropertyType; // تم التحديث
   status: "متاح" | "مؤجر" | "صيانة";
   pricePerNight: number;
   images: PropertyImage[];
-  amenities: string[]; // التأكد من أن الواجهة الأمامية تتوقع مصفوفة
+  amenities: string[];
 };
 const getStatusBadgeColor = (status: string) => {
   switch (status) {
@@ -31,7 +33,11 @@ export default function PropertiesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  const [filters, setFilters] = useState({ search: '', type: 'الكل', status: 'الكل' });
+  const [filters, setFilters] = useState({
+    search: '',
+    type: 'الكل',
+    status: 'الكل',
+  });
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<Property | null>(null);
@@ -60,23 +66,14 @@ export default function PropertiesPage() {
       if (!response.ok) throw new Error('Failed to fetch properties from the server.');
       
       const data = await response.json();
+      
+      const formattedData = data.map((prop: any) => ({
+          ...prop,
+          amenities: Array.isArray(prop.amenities) ? prop.amenities : []
+      }));
 
-      // --- إصلاح المشكلة: التأكد من أن amenities هي مصفوفة دائماً ---
-      const formattedProperties = data.map((prop: any) => {
-          let amenitiesArray = [];
-          if (typeof prop.amenities === 'string') {
-              try {
-                  amenitiesArray = JSON.parse(prop.amenities);
-              } catch (e) {
-                  console.error("Failed to parse amenities:", prop.amenities);
-              }
-          } else if (Array.isArray(prop.amenities)) {
-              amenitiesArray = prop.amenities;
-          }
-          return { ...prop, amenities: amenitiesArray };
-      });
+      setProperties(formattedData);
 
-      setProperties(formattedProperties);
     } catch (err: any) {
       setError("فشل في جلب بيانات العقارات. يرجى المحاولة مرة أخرى.");
       console.error(err.message);
@@ -86,16 +83,20 @@ export default function PropertiesPage() {
   }, [apiBaseUrl, filters]);
 
   useEffect(() => {
-    const handler = setTimeout(() => { fetchProperties(); }, 500);
-    return () => { clearTimeout(handler); };
-  }, [filters, fetchProperties]);
+    const handler = setTimeout(() => {
+        fetchProperties();
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [fetchProperties, filters]);
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
   };
   
-  const clearFilters = () => { setFilters({ search: '', type: 'الكل', status: 'الكل' }); };
+  const clearFilters = () => {
+      setFilters({ search: '', type: 'الكل', status: 'الكل' });
+  };
 
   const openDeleteModal = (property: Property) => { setPropertyToDelete(property); setShowDeleteModal(true); setDeleteError(null); };
   const closeDeleteModal = () => { setPropertyToDelete(null); setShowDeleteModal(false); };
@@ -104,7 +105,6 @@ export default function PropertiesPage() {
   return (
     <>
       <div className="space-y-8 font-serif">
-        {/* ... (العنوان والفلاتر) ... */}
         <div className="flex items-center justify-between">
             <div className="text-right">
             <h1 className="text-3xl font-bold text-gray-800">إدارة العقارات</h1>
@@ -117,6 +117,7 @@ export default function PropertiesPage() {
             إضافة عقار
             </Link>
         </div>
+
         <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
             <div className="md:col-span-2">
@@ -150,8 +151,8 @@ export default function PropertiesPage() {
             </div>
             </div>
         </div>
+
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-x-auto">
-            {/* ... (رأس الجدول) ... */}
             <div className="p-4 flex justify-between items-center border-b">
                 <div className="text-right">
                     <h3 className="font-semibold text-lg text-gray-800">العقارات ({properties.length})</h3>
@@ -162,6 +163,7 @@ export default function PropertiesPage() {
                     مسح الفلاتر
                 </button>
             </div>
+            
             {isLoading ? (
                 <div className="flex items-center justify-center p-8"><Loader2 className="animate-spin mr-2" size={24} /><span>جاري تحميل العقارات...</span></div>
             ) : error ? (
@@ -190,11 +192,11 @@ export default function PropertiesPage() {
                             <img src={mainImage} alt={prop.title} className="w-24 h-16 object-cover rounded-md" />
                             <div>
                                 <p className="text-gray-900 font-medium">{prop.title}</p>
-                                <p className="text-sm text-gray-500">{prop.address}, {prop.city}</p>
+                                <p className="text-sm text-gray-500">{prop.address}, {prop.city?.name}</p>
                             </div>
                             </div>
                         </td>
-                        <td className="p-4 text-gray-700">{prop.type}</td>
+                        <td className="p-4 text-gray-700">{prop.property_type?.name}</td>
                         <td className="p-4">
                             <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(prop.status)}`}>{prop.status}</span>
                         </td>
@@ -203,10 +205,7 @@ export default function PropertiesPage() {
                         </td>
                         <td className="p-4 text-center">
                             <div className="flex items-center justify-center space-x-1 rtl:space-x-reverse">
-                                {/* تحديث زر العرض */}
-                                <Link href={`/admin/properties/${prop.id}`} className="p-2 rounded-full hover:bg-gray-200 transition-colors text-blue-500">
-                                    <Eye size={18} />
-                                </Link>
+                                <button className="p-2 rounded-full hover:bg-gray-200 transition-colors text-blue-500"><Eye size={18} /></button>
                                 <Link href={`/admin/properties/${prop.id}/edit`} className="p-2 rounded-full hover:bg-gray-200 transition-colors text-green-500"><Edit size={18} /></Link>
                                 <button onClick={() => openDeleteModal(prop)} className="p-2 rounded-full hover:bg-gray-200 transition-colors text-red-500"><Trash2 size={18} /></button>
                             </div>
@@ -220,7 +219,6 @@ export default function PropertiesPage() {
         </div>
       </div>
 
-      {/* ... (نافذة تأكيد الحذف) ... */}
       {showDeleteModal && propertyToDelete && (
         <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center z-50" dir="rtl">
           <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">

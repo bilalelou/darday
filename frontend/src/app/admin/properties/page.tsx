@@ -12,8 +12,8 @@ type Property = {
   id: number;
   title: string;
   address: string;
-  city: City; // تم التحديث
-  property_type: PropertyType; // تم التحديث
+  city: City;
+  property_type: PropertyType;
   status: "متاح" | "مؤجر" | "صيانة";
   pricePerNight: number;
   images: PropertyImage[];
@@ -205,7 +205,9 @@ export default function PropertiesPage() {
                         </td>
                         <td className="p-4 text-center">
                             <div className="flex items-center justify-center space-x-1 rtl:space-x-reverse">
-                                <button className="p-2 rounded-full hover:bg-gray-200 transition-colors text-blue-500"><Eye size={18} /></button>
+                                <Link href={`/admin/properties/${prop.id}`} className="p-2 rounded-full hover:bg-gray-200 transition-colors text-blue-500">
+                                    <Eye size={18} />
+                                </Link>
                                 <Link href={`/admin/properties/${prop.id}/edit`} className="p-2 rounded-full hover:bg-gray-200 transition-colors text-green-500"><Edit size={18} /></Link>
                                 <button onClick={() => openDeleteModal(prop)} className="p-2 rounded-full hover:bg-gray-200 transition-colors text-red-500"><Trash2 size={18} /></button>
                             </div>

@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\AmenityController;
 use App\Http\Controllers\Api\CityController;
 use App\Http\Controllers\Api\PropertyTypeController;
+use App\Http\Controllers\Api\AnalyticsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -58,6 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/admin/properties/{property}', [PropertyController::class, 'destroy'])->middleware('role:admin');
 
     Route::get('/admin/dashboard-data', [DashboardController::class, 'getData'])->middleware('role:admin');
+    Route::get('/admin/analytics', [AnalyticsController::class, 'getData'])->middleware('role:admin');
     // Admin routes
     // Route::prefix('admin')->group(function () {
     //     Route::put('/users/{id}', [UserController::class, 'update']);

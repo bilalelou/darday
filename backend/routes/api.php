@@ -1,87 +1,88 @@
 <?php
 
-use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Api\ListingController;
-use App\Http\Controllers\Api\ReviewController;
-use App\Http\Controllers\Api\Admin\UserController;
-use App\Http\Controllers\Api\RentalController;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
-use App\Http\Controllers\Api\PropertyController;
-use App\Http\Controllers\Api\DashboardController;
-use App\Http\Controllers\Api\UserDashboardController;
-use App\Http\Controllers\Api\FavoriteController;
-use App\Http\Controllers\Api\AmenityController;
-use App\Http\Controllers\Api\CityController;
-use App\Http\Controllers\Api\PropertyTypeController;
-use App\Http\Controllers\Api\AnalyticsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-// Public routes
+// --- استيراد الـ Controllers ---
+// Public
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Api\PropertyController;
+
+// Authenticated User
+use App\Http\Controllers\Api\UserDashboardController;
+use App\Http\Controllers\Api\FavoriteController;
+
+// Admin
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Api\Admin\CityController as AdminCityController;
+use App\Http\Controllers\Api\Admin\PropertyTypeController as AdminPropertyTypeController;
+use App\Http\Controllers\Api\Admin\AmenityController as AdminAmenityController;
+use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\RentalController;
+
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
+
+// --- المسارات العامة (لا تتطلب تسجيل الدخول) ---
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/register', [RegisterController::class, 'register']);
-Route::get('/listings/{id}', [ListingController::class, 'show']);
-
-// مسار عام لجلب العقارات المتاحة
 Route::get('/properties', [PropertyController::class, 'getAvailableProperties']);
-
-// مسار عام لجلب تفاصيل عقار واحد
 Route::get('/properties/{property}', [PropertyController::class, 'publicShow']);
 
-// Protected routes
+
+// --- المسارات المحمية (تتطلب تسجيل الدخول) ---
 Route::middleware('auth:sanctum')->group(function () {
+
     Route::post('/logout', [LoginController::class, 'logout']);
-    // Route::post('/listings', [ListingController::class, 'store']);
-    // Route::post('/listings/{listingId}/reviews', [ReviewController::class, 'store']);
 
-    Route::get('/admin/users', [UserController::class, 'index'])->middleware('role:admin');
-    Route::post('/admin/users', [UserController::class, 'store'])->middleware('role:admin');
-    Route::get('/admin/users/{user}', [UserController::class, 'show'])->middleware('role:admin');
-    Route::put('/admin/users/{user}', [UserController::class, 'update'])->middleware('role:admin');
-    Route::delete('/admin/users/{user}', [UserController::class, 'destroy'])->middleware('role:admin');
-    Route::get('/admin/users/{user}/rentals', [UserController::class, 'getRentals'])->middleware('role:admin');
+    // --- مسارات المستخدم المسجل ---
+    Route::prefix('user')->group(function () {
+        Route::get('/dashboard', [UserDashboardController::class, 'getData']);
+        Route::get('/rentals-history', [UserDashboardController::class, 'getRentalsHistory']);
+        Route::get('/profile', [UserDashboardController::class, 'getProfile']);
+        Route::post('/profile', [UserDashboardController::class, 'updateProfile']); // استخدام POST للتعامل مع FormData
+        Route::put('/password', [UserDashboardController::class, 'updatePassword']);
+        Route::get('/settings', [UserDashboardController::class, 'getSettings']);
+        Route::put('/settings', [UserDashboardController::class, 'updateSettings']);
+        Route::get('/favorites', [FavoriteController::class, 'index']);
+    });
 
-    Route::get('/admin/rentals', [RentalController::class, 'index'])->middleware('role:admin');
-    Route::get('/admin/rentals/stats', [RentalController::class, 'getStats'])->middleware('role:admin');
+    // --- مسارات المفضلة (تتطلب مستخدم مسجل) ---
+    Route::post('/favorites', [FavoriteController::class, 'store']);
+    Route::delete('/favorites/{property_id}', [FavoriteController::class, 'destroy']);
+    Route::get('/favorites/status/{property_id}', [FavoriteController::class, 'status']);
 
-    // Amenities for admin
-    Route::get('/admin/amenities', [AmenityController::class, 'index'])->middleware('role:admin');
 
-    // Cities and property types for admin
-    Route::get('/admin/cities', [CityController::class, 'index'])->middleware('role:admin');
-    Route::get('/admin/property-types', [PropertyTypeController::class, 'index'])->middleware('role:admin');
+    // --- مسارات المدير (تتطلب دور "admin") ---
+    Route::prefix('admin')->middleware('role:admin')->group(function () {
+        // Dashboard & Analytics
+        Route::get('/dashboard-data', [DashboardController::class, 'getData']);
+        Route::get('/analytics', [AnalyticsController::class, 'getData']);
 
-    Route::get('/admin/properties', [PropertyController::class, 'index'])->middleware('role:admin');
-    Route::post('/admin/properties', [PropertyController::class, 'store'])->middleware('role:admin');
-    Route::get('/admin/properties/{property}', [PropertyController::class, 'show'])->middleware('role:admin');
-    Route::post('/admin/properties/{property}', [PropertyController::class, 'update'])->middleware('role:admin');
-    Route::delete('/admin/properties/{property}', [PropertyController::class, 'destroy'])->middleware('role:admin');
+        // Users
+        Route::apiResource('users', AdminUserController::class);
+        Route::get('/users/{user}/rentals', [AdminUserController::class, 'getRentals']);
 
-    Route::get('/admin/dashboard-data', [DashboardController::class, 'getData'])->middleware('role:admin');
-    Route::get('/admin/analytics', [AnalyticsController::class, 'getData'])->middleware('role:admin');
-    // Admin routes
-    // Route::prefix('admin')->group(function () {
-    //     Route::put('/users/{id}', [UserController::class, 'update']);
-    //     Route::patch('/users/{id}/toggle-status', [UserController::class, 'toggleStatus']);
-    //     Route::get('/users-stats', [UserController::class, 'getStats']);
-    // });
+        // Properties
+        Route::get('/properties', [PropertyController::class, 'index']);
+        Route::post('/properties', [PropertyController::class, 'store']);
+        Route::get('/properties/{property}', [PropertyController::class, 'show']);
+        Route::post('/properties/{property}', [PropertyController::class, 'update']);
+        Route::delete('/properties/{property}', [PropertyController::class, 'destroy']);
 
-    Route::get('/user/dashboard', [UserDashboardController::class, 'getData'])->middleware('auth:sanctum');
-    Route::get('/user/rentals-history', [UserDashboardController::class, 'getRentalsHistory'])->middleware('auth:sanctum');
+        // Rentals
+        Route::get('/rentals', [RentalController::class, 'index']);
+        Route::get('/rentals/stats', [RentalController::class, 'getStats']);
 
-    // User profile routes
-    Route::get('/user/profile', [UserDashboardController::class, 'getProfile'])->middleware('auth:sanctum');
-    Route::post('/user/profile', [UserDashboardController::class, 'updateProfile'])->middleware('auth:sanctum');
-    Route::put('/user/password', [UserDashboardController::class, 'updatePassword'])->middleware('auth:sanctum');
-
-    // مسارات الإعدادات
-    Route::get('/user/settings', [UserDashboardController::class, 'getSettings'])->middleware('auth:sanctum');
-    Route::put('/user/settings', [UserDashboardController::class, 'updateSettings'])->middleware('auth:sanctum');
-
-    // مسارات المفضلة
-    Route::get('/user/favorites', [FavoriteController::class, 'index'])->middleware('auth:sanctum');
-    Route::post('/favorites', [FavoriteController::class, 'store'])->middleware('auth:sanctum');
-    Route::delete('/favorites/{property_id}', [FavoriteController::class, 'destroy'])->middleware('auth:sanctum');
-    Route::get('/favorites/status/{property_id}', [FavoriteController::class, 'status'])->middleware('auth:sanctum');
+        // Settings (Cities, Types, Amenities)
+        Route::apiResource('cities', AdminCityController::class);
+        Route::apiResource('property-types', AdminPropertyTypeController::class);
+        Route::apiResource('amenities', AdminAmenityController::class);
+    });
 });

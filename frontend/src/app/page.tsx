@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Loader2, MapPin, DollarSign, BedDouble, Bath, Ruler, Search, LogIn, UserPlus, Building, Home } from "lucide-react";
+import { Loader2, MapPin, DollarSign, BedDouble, Bath, Ruler, Search, Building, Home } from "lucide-react";
 
 // تحديث تعريف أنواع البيانات ليعكس العلاقات الجديدة
 type City = { id: number; name: string; };
@@ -17,8 +17,8 @@ type Property = {
   bedrooms: number;
   bathrooms: number;
   area: number;
-  city: City; // <-- تحديث
-  property_type: PropertyType; // <-- تحديث
+  city: City;
+  property_type: PropertyType;
 };
 
 // تعريف أنواع البيانات الجديدة للأقسام المضافة
@@ -30,32 +30,6 @@ const Card = ({ children, className }: { children: React.ReactNode, className?: 
   <div className={`bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden ${className}`}>
     {children}
   </div>
-);
-
-const Navigation = () => (
-    <header className="bg-white shadow-sm sticky top-0 z-40">
-      <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <Link href="/" className="text-2xl font-bold text-gray-800">
-          DarDay
-        </Link>
-        <div className="hidden md:flex items-center space-x-6 rtl:space-x-reverse">
-          <Link href="/" className="text-gray-600 hover:text-blue-600">الرئيسية</Link>
-          <Link href="/properties" className="text-gray-600 hover:text-blue-600">العقارات</Link>
-          <Link href="/about" className="text-gray-600 hover:text-blue-600">من نحن</Link>
-          <Link href="/contact" className="text-gray-600 hover:text-blue-600">اتصل بنا</Link>
-        </div>
-        <div className="flex items-center space-x-2 rtl:space-x-reverse">
-          <Link href="/login" className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
-            <LogIn size={16} className="ml-2" />
-            <span>تسجيل الدخول</span>
-          </Link>
-          <Link href="/register" className="hidden sm:flex items-center bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm hover:bg-gray-300">
-             <UserPlus size={16} className="ml-2" />
-            <span>حساب جديد</span>
-          </Link>
-        </div>
-      </nav>
-    </header>
 );
 
 export default function HomePage() {
@@ -81,7 +55,6 @@ export default function HomePage() {
         const data = await response.json();
         setProperties(data);
         
-        // تحديث منطق حساب عدد العقارات
         const cityCounts = data.reduce((acc: any, prop: Property) => {
             const cityName = prop.city.name;
             acc[cityName] = (acc[cityName] || 0) + 1;
@@ -114,9 +87,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="bg-gray-50 font-serif" dir="rtl">
-      <Navigation />
-      
+    <div>
       {/* Hero Section */}
       <section className="relative h-[500px] text-white">
           <div 

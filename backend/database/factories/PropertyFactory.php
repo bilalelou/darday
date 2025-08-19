@@ -24,6 +24,7 @@ class PropertyFactory extends Factory
             'status' => $this->faker->randomElement(['متاح', 'مؤجر', 'صيانة']),
             'pricePerNight' => $this->faker->numberBetween(500, 3000),
             'imageUrl' => 'https://placehold.co/100x60/E2E8F0/4A5568?text=Property',
+            'phone_number' => '2126' . $this->faker->numerify('########'),
             'bedrooms' => $this->faker->numberBetween(1, 5),
             'bathrooms' => $this->faker->numberBetween(1, 3),
             'area' => $this->faker->numberBetween(50, 300),
